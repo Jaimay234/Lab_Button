@@ -6,12 +6,15 @@
 
 
 // Variables 
+
+#define timeDelay 5000
+#define BUTTON_PIN 4
 unsigned long buttonTime = 0;
-const unsigned long timeDelay = 5000;
 static int httpResponseCode = 0;
 static String payload = "{}";
 static bool isOpen = 0;
-
+static bool prevButton = HIGH;
+static bool btn_Current = LOW;
 // Functions
 
 String httpGETRequest(const char* url){
@@ -42,7 +45,7 @@ String httpGETRequest(const char* url){
   return payload;
 }
 
-void httpPOSTRequest(bool status) {
+void httpPOSTRequest() {
   HTTPClient http;
 
   http.begin(serverName);
@@ -52,7 +55,7 @@ void httpPOSTRequest(bool status) {
 
   JsonDocument doc;
 
-  doc["isOpen"] = !(status);
+  doc["isOpen"] = !(isOpen);
   doc["updatedBy"] = "Lab Button";
   doc["message"] = "The lab button was pressed, Lab status updated";
   String requestBody;
@@ -68,7 +71,6 @@ void httpPOSTRequest(bool status) {
 }
 
 void apiCheck() {
-  delay(1000);
   httpGETRequest(serverName);
   if(isOpen){
     //digitalwrite to pin green
@@ -94,13 +96,24 @@ void setup() {
     delay(300);
     Serial.print("Connected to the internet");
   }
-
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   delay(500);
 }
 
 
 
 void loop() {
-  
+  btn_Current = digitalRead(BUTTON_PIN);
+  unsigned long currentTime = millis();
+  if (currentTime - buttonTime >= timeDelay){
+    buttonTime = currentTime;
+    apiCheck();
+  }
+  if(btn_Current == LOW && btn_Current != prevButton ){
+    httpGETRequest(serverName);
+    httpPOSTRequest();
+    delay(100);
+  }
+  prevButton = btn_Current;
 
 }
