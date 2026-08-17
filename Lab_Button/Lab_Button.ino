@@ -9,12 +9,16 @@
 
 #define timeDelay 5000
 #define BUTTON_PIN 4
+#define RED_LED_PIN 10
+#define GREEN_LED_PIN 11
 unsigned long buttonTime = 0;
 static int httpResponseCode = 0;
 static String payload = "{}";
 static bool isOpen = 0;
-static bool prevButton = HIGH;
-static bool btn_Current = LOW;
+unsigned long lastButtonPress = 0;
+volatile bool btn_pressed = false;
+JsonDocument doc;
+
 // Functions
 
 String httpGETRequest(const char* url){
@@ -25,7 +29,7 @@ String httpGETRequest(const char* url){
 
   
   httpResponseCode = http.GET();
-  JsonDocument doc;
+  
   if (httpResponseCode>0) {
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
@@ -53,8 +57,6 @@ void httpPOSTRequest() {
   http.addHeader("Authorization", String("Bearer ") + API_KEY);
   http.addHeader("Content-Type", "application/json");
 
-  JsonDocument doc;
-
   doc["isOpen"] = !(isOpen);
   doc["updatedBy"] = "Lab Button";
   doc["message"] = "The lab button was pressed, Lab status updated";
@@ -81,6 +83,10 @@ void apiCheck() {
 }
 
 
+void ARDUINO_ISR_ATTR buttonPress(){
+  btn_pressed = true;
+}
+
 //test for pushing
 
 void setup() {
@@ -96,24 +102,25 @@ void setup() {
     delay(300);
     Serial.print("Connected to the internet");
   }
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
   delay(500);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN),buttonPress, FALLING);
 }
 
 
 
 void loop() {
-  btn_Current = digitalRead(BUTTON_PIN);
   unsigned long currentTime = millis();
+  if (currentTime - lastButtonPress >= 100 && btn_pressed == true){
+    lastButtonPress = currentTime;
+    btn_pressed = false;
+    httpGETRequest(serverName);
+    httpPOSTRequest();
+  }
   if (currentTime - buttonTime >= timeDelay){
     buttonTime = currentTime;
     apiCheck();
   }
-  if(btn_Current == LOW && btn_Current != prevButton ){
-    httpGETRequest(serverName);
-    httpPOSTRequest();
-    delay(100);
-  }
-  prevButton = btn_Current;
 
 }
