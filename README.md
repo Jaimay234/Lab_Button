@@ -1,9 +1,9 @@
 # IoT Lab Status Controller
 
 ### What is it:
-This is an embedded IoT device that is built around an ESP32 that allows a physical button to remotely update and monitor the status of a laboratory thorugh a REST API.
+This is an embedded IoT device that is built around an ESP32 that allows a physical button to remotely update and monitor the status of a laboratory through a REST API.
 
-The project connects the physical computer hardware to a cloud based backend, demonstrating embedded programming, wireless communication, REST APIs, JSON serialization, interrupt handling and FreeRTOS task synchonization.
+The project connects the physical computer hardware to a cloud based backend, demonstrating embedded programming, wireless communication, REST APIs, JSON serialization, interrupt handling and FreeRTOS task synchronization.
 
 ## Features:
 - ESP32 based controller
@@ -15,7 +15,7 @@ The project connects the physical computer hardware to a cloud based backend, de
 - Software button debouncing
 - FreeRTOS task for periodic API polling
 - FreeRTOS mutex for protecting HTTP requests and shared resources
-- Remote state synchonization
+- Remote state synchronization
 - LED status indication
 - API authentication using a bearer token
 - Privacy and protection of credentials using a separate header file (secrets.h)
@@ -25,7 +25,7 @@ The project connects the physical computer hardware to a cloud based backend, de
 - Push button
 - Red LED
 - Green LED
-- 220Ω Resistors (prevent LEDs from  burning out)
+- 220Ω Resistors (prevent LEDs from burning out)
 - Breadboard and wires
 
 ### Pin Configuration:
@@ -57,7 +57,7 @@ Main technologies:
 - HTTPClient.h
 - ArduinoJson.h
 
-Wifi.h and HTTPClient.h are provided by the ESP32 Ardunio framework. ArduinoJson is an external library. 
+Wifi.h and HTTPClient.h are provided by the ESP32 Arduino framework. ArduinoJson is an external library. 
 
 ## How it works
 ### 1. Device Initialization
@@ -80,7 +80,7 @@ Instead of performing the HTTP request itself. This is then processed inside of 
 
 ### 3. Updating the backend
 
-When a button press is detected, the ESP332 retrieves the current server state and sends a POST request containing the new state.
+When a button press is detected, the ESP32 retrieves the current server state and sends a POST request containing the new state.
 
 Example payload:
 
@@ -109,7 +109,7 @@ This allows the physical device to remain synchronized even when the state is ch
 
 The LEDs provide a physical representation of the lab status on the server either being:
 
-OPEN = -> Green LED
+OPEN -> Green LED
 Closed -> Red LED
 
 This means the ESP32 is not simply sending commands to the server; it also acts as an IoT edge device that consumes data from the backend.
@@ -142,7 +142,7 @@ performing network operations.
 Important credentials are not saved in the main file and instead in a separate header file:
 secrets.h
 
-The firmware uses the credentials to authenticated using the bearer token:
+The firmware authenticates using the bearer token:
 Authorization: Bearer <API_KEY>
 
 secrets.h should not be committed to the repository.
